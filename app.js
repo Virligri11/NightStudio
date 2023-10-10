@@ -1,3 +1,4 @@
+
 const express = require('express')
 const app = express()
 const path = require('path') 
@@ -6,13 +7,7 @@ var port = 1853;
 const CronJob = require('cron').CronJob;
 const fs = require("fs");
 const { randomInt } = require("crypto")
-const jsdom = require("jsdom");
-const { JSDOM } = jsdom;
-const dom = new JSDOM(`<!DOCTYPE html><p>Hello world</p>`);
-
-window = dom.window;
-document = window.document;
-XMLHttpRequest = window.XMLHttpRequest;
+var nodemailer = require('nodemailer');
 
 
 app.use(bodyParser.urlencoded({ extended: false }))
@@ -24,11 +19,25 @@ app.set('view engine', 'ejs')
 const mysql = require("mysql");
 const connection= mysql.createConnection({
 	host:'127.0.0.1',
-	user:'root',
-	password:'20070704millie',
-	database:'nightstudio',
+	user:'student',
+	password:'fin5)SDK',
+	database:'students',
 	multipleStatements: true // runing multiply mysql at same time
 
+});
+
+var transporter = nodemailer.createTransport({
+    service: "Outlook365",
+    host: 'smtp.office365.com',
+    secureConnection: false, // TLS requires secureConnection to be false
+    port: 587, // port for secure SMTP
+    tls: {
+       ciphers:'SSLv3'
+    },
+    auth: {
+        user: 'nightstudio@ncpachina.org',
+        pass: 'h5^7Kj`='
+    }
 });
 
 
@@ -75,10 +84,7 @@ function dbDeleteAllStudentRecords() { // Accepts query, ex. {Verification_Code:
 	const total ="DELETE FROM studentrecord;"; 
 	connection.query(total,(err,results)=>{
 		if(err) {
-			console.log(err.message);
-		}
-		else{
-			console.log(results);
+			throw err;
 		}
 	})
 }
@@ -101,13 +107,13 @@ function storedata(){
 	const finddata ="select * from studentrecord"; 
     connection.query(finddata,(err,results)=>{
         if(err){
-            console.log(err);
+            throw err;
         }
         else{
             var getnumber = (JSON.parse(JSON.stringify(results)))
             var timeperiod;
             for(let i = 0;i<getnumber.length;i++){
-                console.log(getnumber[i].name,getnumber[i].studentID,getnumber[i].classes,getnumber[i].grade,getnumber[i].purpose);
+                // console.log(getnumber[i].name,getnumber[i].studentID,getnumber[i].classes,getnumber[i].grade,getnumber[i].purpose);
                 if(getnumber[i].Seven_to_Eight == "true" && getnumber[i].Eight_to_Nine == "true"){
                     timeperiod = "7-9 P.M"
                 }
@@ -127,10 +133,7 @@ function storedata(){
                 const insert = "insert into totaldata (date,name,studentID,classes,grade,purpose,timeperiod)values(?,?,?,?,?,?,?)"
                 connection.query(insert,[finalday,getnumber[i].name,getnumber[i].studentID,getnumber[i].classes,getnumber[i].grade,getnumber[i].purpose,timeperiod],(err,result)=>{
                     if(err){
-                        console.log(err);
-                    }
-                    else{
-                        console.log(result);
+                        throw err;
                     }
                 })
             }
@@ -147,14 +150,11 @@ store.start();
 
 
 // UPDATE blacklist SET remaindate = remaindate-1;
-const decreasedate = new CronJob('30 00 23 * * *', function() {
+const decreasedate = new CronJob('31 00 23 * * *', function() {
 	const update = 'UPDATE blacklist SET remaindate = remaindate-1';
 	connection.query(update,(err,result)=>{
 		if(err){
-			console.log(err);
-		}
-		else{
-			console.log(result);
+			throw err;
 		}
 	});
 	const d = new Date();
@@ -162,16 +162,12 @@ const decreasedate = new CronJob('30 00 23 * * *', function() {
 });
 decreasedate.start();
 
-const deleteblacklist = new CronJob('30 00 23 * * *', function() {
+const deleteblacklist = new CronJob('32 00 23 * * *', function() {
 	const update = 'delete from blacklist where remaindate=0';
 	connection.query(update,(err,result)=>{
 		if(err){
-			console.log(err);
+			throw err;
 		}
-		else{
-			console.log(result);
-		}
-
 	});
 	const d = new Date();
 	console.log('store data at:', d);
@@ -225,14 +221,14 @@ app.get('/submit',function(req,res){
 	var timeperiod;
 	var fullname=Firstname+" "+Lastname;
 	var gettot;
-	const findblacklist ="select count(3) from blacklist where name=? && grade=?"; 
-	const checkdouble = "select count(4) from studentrecord where name=? && grade=? && studentID=?"
-	connection.query(findblacklist,[fullname,grade],(err,resultq)=>{
+	const findblacklist ="select count(3) from blacklist where studentid=?"; 
+	const checkdouble = "select count(4) from studentrecord where studentID=?"
+	connection.query(findblacklist,studentID,(err,resultq)=>{
 		if(err) {throw err;}
 		else{
 			var testn = (JSON.parse(JSON.stringify(resultq)))
 			var whetherinblacklist =  testn[0]['count(3)'];
-			console.log(whetherinblacklist);
+			// console.log(whetherinblacklist);
 			if(whetherinblacklist>0){
 				res.render("infoPanel.ejs",{message:"You are in the BLACKLIST"});
 				return;
@@ -246,7 +242,7 @@ app.get('/submit',function(req,res){
  				else {
 					const findone ="select count(3) from studentrecord where name=? and grade=? and studentID=?"; 
 					connection.query(findone,[fullname,grade,studentID],(err,results)=>{
-						if(err) {console.log(err);}
+						if(err) {throw err}
 						else {
 							var avoid = (JSON.parse(JSON.stringify(results)))
 							var avoidrepeat =  avoid[0]['count(3)'];
@@ -275,7 +271,7 @@ app.get('/submit',function(req,res){
 									var verification = getcode();
 									const insert = 'insert into studentrecord(name,studentID,classes,grade,purpose,Seven_to_Eight, Eight_to_Nine,verification)values(?,?,?,?,?,?,?,?)';
 									connection.query(insert,[(Firstname+" "+Lastname),studentID,classes,grade,purpose,Seven_to_Eight,Eight_to_Nine,verification],(err,result)=>{
-										if(err) {console.log(err.message)}
+										if(err) {throw err}
 										else {
 											if(Seven_to_Eight == "true" && Eight_to_Nine == "true"){
 												timeperiod = "7-9";
@@ -288,10 +284,23 @@ app.get('/submit',function(req,res){
 											}
 											const verifi ='select * from studentrecord where studentID=? and name=? and grade=?';
 											connection.query(verifi,[studentID,fullname,grade],(err,resu)=>{
-												if(err) {console.log(err.message)}
+												if(err) {throw err}
 												else{
 													gettot = (JSON.parse(JSON.stringify(resu)));
-													console.log(gettot[0].verification);
+													// console.log(gettot[0].verification);
+													var testing = fullname+" you have successed sign up the night studio in time period at "+ timeperiod+" and your vertification code is "+verification;
+													var mailOptions = {
+														from: 'nightstudio@ncpachina.org',
+														to: studentID+'@ncpachina.org',
+														subject: 'Night studio Sign Up',
+														text: testing
+
+													};													
+													transporter.sendMail(mailOptions, function(error, info){
+														if (error) {
+															throw err
+														}
+													});
 													res.render('submit.ejs', {firstName: Firstname, lastName: Lastname, classs: classes, grade: grade, timePeriod: timeperiod,verification:gettot[0].verification})
 												}
 											});
@@ -335,7 +344,7 @@ app.get('/cancelSubmit', function(req, res) {
 
 	const findstudentid ="select* from studentrecord where studentID=? and name=? and grade=?"; 
 	connection.query(findstudentid,[studentid,fullname,grade],(err,results)=>{
-		if(err) {console.log(err.message)}
+		if(err) {throw err }
 		else{
 			if(results == ""){
 				res.render('error.ejs',{message:"please enter the correct name/ student id/ Grade"});
@@ -345,11 +354,11 @@ app.get('/cancelSubmit', function(req, res) {
 				const delate = "delete from studentrecord where name=? and studentID=?";
 				connection.query(delate,[fullname,studentid],(err,result)=>{
 					if(err) {
-						console.log(err.message);
+						// console.log(err.message);
 						res.render('error.ejs',{message:"please enter the correct name/ student id/ Grade"});
 					}
 					else{
-						console.log(result);
+						// console.log(result);
 						res.render('infoPanel.ejs',{message:"Your Night Studio session has been cancelled."});
 					}
 				})
@@ -365,7 +374,7 @@ app.get('/dataPanel', function(req, res) {
 	const total ="select* from studentrecord"; 
 	connection.query(total,(err,results)=>{
 		if(err) {
-			console.log(err.message);
+			throw err;
 		}
 		else{
 			var gettot = (JSON.parse(JSON.stringify(results)))
@@ -397,13 +406,14 @@ app.get('/blacklist',function(req,res){
 })
 
 app.get('/blacklistsubmit',function(req,res){
-	const insert = "insert into blacklist(name,grade,remaindate)values(?,?,?)";
+	const insert = "insert into blacklist(name,grade,remaindate,studentid)values(?,?,?,?)";
 	var name = capitalizeFirstLetter(req.query.firstName.trim().toLowerCase())+" "+capitalizeFirstLetter(req.query.lastName.trim().toLowerCase());
 	var grade = req.query.grade;
-	console.log(name,grade);
-	connection.query(insert,[name,grade,7],(err,result)=>{
+	var studentid = req.query.studentid;
+	// console.log(name,grade);
+	connection.query(insert,[name,grade,7,studentid],(err,result)=>{
 		if(err) {
-			console.log(err.message);
+			throw err;
 		}
 		else{
 			res.render("infoPanel.ejs",{message:"Successed add "+name+" from G"+grade+" into the BlackList."});
@@ -415,18 +425,18 @@ app.get('/viewblacklist',function(req, res) {
 	const total ="select* from blacklist"; 
 	connection.query(total,(err,results)=>{
 		if(err) {
-			console.log(err.message);
+			throw err;
 		}
 		else{
 			var gettot = (JSON.parse(JSON.stringify(results)));
 			res.render('blacklistPanel.ejs', {jsonData: JSON.stringify(gettot)})
-			console.log(gettot);
+			// console.log(gettot);
 		}
 	})
 	// res.render('blacklistPanel.ejs');
 })
 
-// create table blacklist(name VARCHAR(32),grade VARCHAR(32),remaindate INT)
+// create table blacklist(name VARCHAR(32),grade VARCHAR(32),remaindate INT, studentid VARCHAR(32));
 
 app.get('/clearAllData', function(req, res) {
 	res.render('clearAllData.ejs')
@@ -434,7 +444,7 @@ app.get('/clearAllData', function(req, res) {
 
 app.post('/clearAllDataSubmit', function(req, res) {
 	var opCode = req.body.opCode
-	console.log(opCode == operationPassword);
+	// console.log(opCode == operationPassword);
 	if (opCode == operationPassword) {
 		dbDeleteAllStudentRecords();
 		res.render('infoPanel.ejs',{message:"All sign-up data entries are deleted."})
@@ -452,12 +462,12 @@ app.get('/viewvertify',function(req,res){
 
 app.post('/viewVerificationCodeSubmit', function(req, res) {
 	var opCode = req.body.opCode
-	console.log(opCode == operationPassword);
+	// console.log(opCode == operationPassword);
 	if (opCode == operationPassword) {
 		const total ="select* from studentrecord"; 
 		connection.query(total,(err,results)=>{
 			if(err) {
-				console.log(err.message);
+				throw err;
 			}
 			else{
 				var gettot = (JSON.parse(JSON.stringify(results)))
@@ -488,17 +498,22 @@ app.post('/viewVerificationCodeSubmit', function(req, res) {
 })
 
 
+app.listen(port)
 
-var server = app.listen(8081, function () {
-    var host = "localhost"
-    var port = server.address().port
-    console.log("应用实例，访问地址为 http://%s:%s", host, port)
+// var server = app.listen(8081, function () {
+//     var host = "localhost"
+//     var port = server.address().port
+//     console.log("应用实例，访问地址为 http://%s:%s", host, port)
    
-  })
+//   })
   
-app.listen(port);
+// app.listen(port);
 
 
 // 
 // create table studentrecord(name VARCHAR(32),studentID VARCHAR(32),classes VARCHAR(32),grade VARCHAR(32),purpose VARCHAR(32),Seven_to_Eight VARCHAR(32),Eight_to_Nine VARCHAR(32),verification VARCHAR(10));
 // 
+
+// student@192.168.123.27
+
+// fin5)SDK
