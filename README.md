@@ -1,5 +1,6 @@
 # NightStudio
 Night studio signup website using Node.js
 
-first, using Mongodb for the database.
-node.js -> express
+it use mysql for database
+Ejs for web fontend, express for Web backend
+
