@@ -127,7 +127,7 @@ function storedata(){
                 var year = date.getFullYear();
                 var month = date.getMonth();
                 month = (month+1 < 10 ? "0" : "") + (month+1);
-                var day  = date.getDay();
+                var day  = date.getDate();
                 day = (day < 10 ? "0" : "") + day;
                 var finalday = year+"-"+month+"-"+day;
                 const insert = "insert into totaldata (date,name,studentID,classes,grade,purpose,timeperiod)values(?,?,?,?,?,?,?)"
