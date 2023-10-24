@@ -35,8 +35,8 @@ var transporter = nodemailer.createTransport({
        ciphers:'SSLv3'
     },
     auth: {
-        user: 'nightstudio@ncpachina.org',
-        pass: 'h5^7Kj`='
+        user: 'signup-notification@ncpachina.org',
+        pass: 'fJG7H3,W'
     }
 });
 
@@ -150,7 +150,7 @@ store.start();
 
 
 // UPDATE blacklist SET remaindate = remaindate-1;
-const decreasedate = new CronJob('31 00 23 * * *', function() {
+const decreasedate = new CronJob('40 00 23 * * *', function() {
 	const update = 'UPDATE blacklist SET remaindate = remaindate-1';
 	connection.query(update,(err,result)=>{
 		if(err){
@@ -162,7 +162,7 @@ const decreasedate = new CronJob('31 00 23 * * *', function() {
 });
 decreasedate.start();
 
-const deleteblacklist = new CronJob('32 00 23 * * *', function() {
+const deleteblacklist = new CronJob('45 00 23 * * *', function() {
 	const update = 'delete from blacklist where remaindate=0';
 	connection.query(update,(err,result)=>{
 		if(err){
@@ -215,6 +215,16 @@ app.get('/submit',function(req,res){
 		res.render('error.ejs', {message: "please try again between " + (openHour < 10 ? "0" : "") + openHour + ":" + (openMin < 10 ? "0" : "") + openMin + " and " + (closeHour < 10 ? "0" : "") + closeHour + ":" + (closeMin < 10 ? "0" : "") + closeMin + "."})
 		return;
 	}
+	var fdate = new Date();
+	var fyear = fdate.getFullYear();
+	var fmonth = fdate.getMonth()+1;
+	var fday  = fdate.getDate();
+	var ffinalday = year+"-"+month+"-"+day;
+	if(ffinalday=="2023-10-31"){
+		res.render('infoPanel.ejs',{message:"Today is Helloween, Nightstudio do not open :)"});
+		return;
+	}
+	
 	var Firstname =  capitalizeFirstLetter(req.query.firstName.trim().toLowerCase());
 	var Lastname = capitalizeFirstLetter(req.query.lastName.trim().toLowerCase());
 	var studentID = req.query.studentID.trim(),classes = req.query.studentclass, grade = req.query.grade, purpose = req.query.purpose, Seven_to_Eight = req.query.seventoeight, Eight_to_Nine = req.query.eighttonine;
@@ -290,7 +300,7 @@ app.get('/submit',function(req,res){
 													// console.log(gettot[0].verification);
 													var testing = fullname+" you have successed sign up the night studio in time period at "+ timeperiod+" and your vertification code is "+verification;
 													var mailOptions = {
-														from: 'nightstudio@ncpachina.org',
+														from: 'signup-notification@ncpachina.org',
 														to: studentID+'@ncpachina.org',
 														subject: 'Night studio Sign Up',
 														text: testing
