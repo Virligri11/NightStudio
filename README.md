@@ -1,6 +1,9 @@
 # NightStudio
 Night studio signup website using Node.js
 
+
+upper stream: https://github.com/ncpatst/NightStudio
+
 it use mysql for database
 
 Ejs for web fontend, express for Web backend
