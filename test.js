@@ -1,6 +1,8 @@
 var fdate = new Date();
-var fyear = date.getFullYear();
-var fmonth = date.getMonth()+1;
-var fday  = date.getDate();
-var ffinalday = year+"-"+month+"-"+day;
-console.log(ffinalday=="2023-10-31");
+var fyear = fdate.getFullYear();
+var fmonth = fdate.getMonth()+1;
+var fday  = fdate.getDate();
+var ffinalday = fyear+"-"+fmonth+"-"+fday;
+if(ffinalday=="2023-10-31"){
+    console.log(ffinalday)
+}

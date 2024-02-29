@@ -26,6 +26,17 @@ const connection= mysql.createConnection({
 
 });
 
+// const mysql = require("mysql");
+// const connection= mysql.createConnection({
+// 	host:'127.0.0.1',
+// 	user:'root',
+// 	password:'20070704millie',
+// 	database:'nightstudio',
+// 	multipleStatements: true // runing multiply mysql at same time
+
+// });
+
+
 var transporter = nodemailer.createTransport({
     service: "Outlook365",
     host: 'smtp.office365.com',
@@ -107,6 +118,7 @@ function storedata(){
 	const finddata ="select * from studentrecord"; 
     connection.query(finddata,(err,results)=>{
         if(err){
+			console.log(err);
             throw err;
         }
         else{
@@ -133,6 +145,7 @@ function storedata(){
                 const insert = "insert into totaldata (date,name,studentID,classes,grade,purpose,timeperiod)values(?,?,?,?,?,?,?)"
                 connection.query(insert,[finalday,getnumber[i].name,getnumber[i].studentID,getnumber[i].classes,getnumber[i].grade,getnumber[i].purpose,timeperiod],(err,result)=>{
                     if(err){
+						console.log(err);
                         throw err;
                     }
                 })
@@ -154,6 +167,7 @@ const decreasedate = new CronJob('40 00 23 * * *', function() {
 	const update = 'UPDATE blacklist SET remaindate = remaindate-1';
 	connection.query(update,(err,result)=>{
 		if(err){
+			console.log(err);
 			throw err;
 		}
 	});
@@ -193,6 +207,15 @@ app.get('/signup', function(req, res) {
 		res.render('error.ejs', {message: "please try again between " + (openHour < 10 ? "0" : "") + openHour + ":" + (openMin < 10 ? "0" : "") + openMin + " and " + (closeHour < 10 ? "0" : "") + closeHour + ":" + (closeMin < 10 ? "0" : "") + closeMin + "."})
 		return
 	}
+	// var fdate = new Date();
+	// var fyear = fdate.getFullYear();
+	// var fmonth = fdate.getMonth()+1;
+	// var fday  = fdate.getDate();
+	// var ffinalday = fyear+"-"+fmonth+"-"+fday;
+	// if(ffinalday=="2023-10-31"){
+	// 	res.render('infoPanel.ejs',{message:"Today is Helloween, Nightstudio do not open :)"});
+	// 	return;
+	// }
 	const firstcount ="select count(1) from studentrecord where Seven_to_Eight='true'"; 
 	const secondcount ="select count(1) from studentrecord where Eight_to_Nine='true'"; 
 	connection.query(firstcount+";"+secondcount,(err,results)=>{
@@ -219,12 +242,11 @@ app.get('/submit',function(req,res){
 	var fyear = fdate.getFullYear();
 	var fmonth = fdate.getMonth()+1;
 	var fday  = fdate.getDate();
-	var ffinalday = year+"-"+month+"-"+day;
+	var ffinalday = fyear+"-"+fmonth+"-"+fday;
 	if(ffinalday=="2023-10-31"){
 		res.render('infoPanel.ejs',{message:"Today is Helloween, Nightstudio do not open :)"});
 		return;
 	}
-	
 	var Firstname =  capitalizeFirstLetter(req.query.firstName.trim().toLowerCase());
 	var Lastname = capitalizeFirstLetter(req.query.lastName.trim().toLowerCase());
 	var studentID = req.query.studentID.trim(),classes = req.query.studentclass, grade = req.query.grade, purpose = req.query.purpose, Seven_to_Eight = req.query.seventoeight, Eight_to_Nine = req.query.eighttonine;
@@ -297,7 +319,7 @@ app.get('/submit',function(req,res){
 												if(err) {throw err}
 												else{
 													gettot = (JSON.parse(JSON.stringify(resu)));
-													// console.log(gettot[0].verification);
+													console.log(gettot[0].verification);
 													var testing = fullname+" you have successed sign up the night studio in time period at "+ timeperiod+" and your vertification code is "+verification;
 													var mailOptions = {
 														from: 'signup-notification@ncpachina.org',
@@ -435,6 +457,7 @@ app.get('/viewblacklist',function(req, res) {
 	const total ="select* from blacklist"; 
 	connection.query(total,(err,results)=>{
 		if(err) {
+			console.log(err);
 			throw err;
 		}
 		else{
@@ -477,6 +500,7 @@ app.post('/viewVerificationCodeSubmit', function(req, res) {
 		const total ="select* from studentrecord"; 
 		connection.query(total,(err,results)=>{
 			if(err) {
+				console.log(err);
 				throw err;
 			}
 			else{
@@ -507,6 +531,10 @@ app.post('/viewVerificationCodeSubmit', function(req, res) {
 	}
 })
 
+// app.get('/report',function(req,res){
+// 	res.render('reportasuggest.ejs')
+// })
+
 
 app.listen(port)
 
@@ -527,3 +555,5 @@ app.listen(port)
 // student@192.168.123.27
 
 // fin5)SDK
+
+// (forever start app.js)&
