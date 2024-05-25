@@ -26,31 +26,6 @@ app.set('view engine', 'ejs')
 
 // });
 
-const mysql = require("mysql");
-const connection= mysql.createConnection({
-	host:'127.0.0.1',
-	user:'root',
-	password:'20070704millie',
-	database:'nightstudio',
-	multipleStatements: true // runing multiply mysql at same time
-
-});
-
-
-var transporter = nodemailer.createTransport({
-    service: "Outlook365",
-    host: 'smtp.office365.com',
-    secureConnection: false, // TLS requires secureConnection to be false
-    port: 587, // port for secure SMTP
-    tls: {
-       ciphers:'SSLv3'
-    },
-    auth: {
-        user: 'signup-notification@ncpachina.org',
-        pass: 'fJG7H3,W'
-    }
-});
-
 
 
 var operationPassword = fs.readFileSync("operationpassword.txt", "utf8") // the teacher password should be stored in operationpassword.txt in the root directory
@@ -314,6 +289,28 @@ app.get('/submit',function(req,res){
 											else if(Eight_to_Nine == "true"){
 												timeperiod = "8-9";
 											}
+											// const verifi ='select * from studentrecord where studentID=? and name=? and grade=?';
+											// connection.query(verifi,[studentID,fullname,grade],(err,resu)=>{
+											// 	if(err) {throw err}
+											// 	else{
+											// 		gettot = (JSON.parse(JSON.stringify(resu)));
+											// 		console.log(gettot[0].verification);
+											// 		var testing = fullname+" you have successed sign up the night studio in time period at "+ timeperiod+" and your vertification code is "+verification;
+											// 		var mailOptions = {
+											// 			from: 'signup-notification@ncpachina.org',
+											// 			to: studentID+'@ncpachina.org',
+											// 			subject: 'Night studio Sign Up',
+											// 			text: testing
+
+											// 		};													
+											// 		transporter.sendMail(mailOptions, function(error, info){
+											// 			if (error) {
+											// 				throw err
+											// 			}
+											// 		});
+											// 		res.render('submit.ejs', {firstName: Firstname, lastName: Lastname, classs: classes, grade: grade, timePeriod: timeperiod,verification:gettot[0].verification})
+											// 	}
+											// });
 										}
 									});
 								}
