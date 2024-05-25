@@ -3,7 +3,7 @@ const express = require('express')
 const app = express()
 const path = require('path') 
 const bodyParser = require('body-parser')
-var port = 1853;
+var port = 1854;
 const CronJob = require('cron').CronJob;
 const fs = require("fs");
 const { randomInt } = require("crypto")
@@ -16,25 +16,25 @@ app.use(express.static(__dirname + '/public'))
 app.set('view engine', 'ejs')
 
 
-const mysql = require("mysql");
-const connection= mysql.createConnection({
-	host:'127.0.0.1',
-	user:'student',
-	password:'fin5)SDK',
-	database:'students',
-	multipleStatements: true // runing multiply mysql at same time
-
-});
-
 // const mysql = require("mysql");
 // const connection= mysql.createConnection({
 // 	host:'127.0.0.1',
-// 	user:'root',
-// 	password:'20070704millie',
-// 	database:'nightstudio',
+// 	user:'student',
+// 	password:'fin5)SDK',
+// 	database:'students',
 // 	multipleStatements: true // runing multiply mysql at same time
 
 // });
+
+const mysql = require("mysql");
+const connection= mysql.createConnection({
+	host:'127.0.0.1',
+	user:'root',
+	password:'20070704millie',
+	database:'nightstudio',
+	multipleStatements: true // runing multiply mysql at same time
+
+});
 
 
 var transporter = nodemailer.createTransport({
@@ -219,7 +219,7 @@ app.get('/signup', function(req, res) {
 	const firstcount ="select count(1) from studentrecord where Seven_to_Eight='true'"; 
 	const secondcount ="select count(1) from studentrecord where Eight_to_Nine='true'"; 
 	connection.query(firstcount+";"+secondcount,(err,results)=>{
-    	if(err) {throw err;}
+    	if(err) {console.log(err)}
  		else {
 			var getnumber = (JSON.parse(JSON.stringify(results)))
 			var firstPeriodcount =  getnumber[0][0]['count(1)'];
@@ -314,28 +314,6 @@ app.get('/submit',function(req,res){
 											else if(Eight_to_Nine == "true"){
 												timeperiod = "8-9";
 											}
-											const verifi ='select * from studentrecord where studentID=? and name=? and grade=?';
-											connection.query(verifi,[studentID,fullname,grade],(err,resu)=>{
-												if(err) {throw err}
-												else{
-													gettot = (JSON.parse(JSON.stringify(resu)));
-													console.log(gettot[0].verification);
-													var testing = fullname+" you have successed sign up the night studio in time period at "+ timeperiod+" and your vertification code is "+verification;
-													var mailOptions = {
-														from: 'signup-notification@ncpachina.org',
-														to: studentID+'@ncpachina.org',
-														subject: 'Night studio Sign Up',
-														text: testing
-
-													};													
-													transporter.sendMail(mailOptions, function(error, info){
-														if (error) {
-															throw err
-														}
-													});
-													res.render('submit.ejs', {firstName: Firstname, lastName: Lastname, classs: classes, grade: grade, timePeriod: timeperiod,verification:gettot[0].verification})
-												}
-											});
 										}
 									});
 								}
